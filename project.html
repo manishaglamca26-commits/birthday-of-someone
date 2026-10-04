@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surprise!</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; overflow: hidden;
+    display: flex; justify-content: center; align-items: center; flex-direction: column;
+    background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center;
+  }
+  h1 { font-size: 20px; color: #aaa; margin: 0 0 30px; padding: 0 16px; }
+
+  /* RUNAWAY BUTTON */
+  #mainBtn {
+    padding: 18px 35px; font-size: 22px; font-weight: bold;
+    border: none; border-radius: 12px; background: #00c853; color: #fff;
+    cursor: pointer; transition: left .15s, top .15s, transform .2s;
+  }
+  #mainBtn:hover { background: #00a844; transform: scale(1.05); }
+  #taunt { margin-top: 16px; min-height: 24px; color: #ffd54f; font-size: 18px; }
+  #score { position: fixed; bottom: 12px; left: 0; right: 0; font-size: 14px; color: #666; }
+
+  /* FAKE LOADING SCREEN */
+  #fake {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: #0a1f12; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
+  }
+  #fakeTitle { font-size: 28px; font-weight: bold; color: #00e676; margin-bottom: 20px; }
+  #bar { width: min(420px, 90vw); height: 22px; background: #1b3a26; border-radius: 12px; overflow: hidden; }
+  #fill { height: 100%; width: 0%; background: #00e676; transition: width .4s; }
+  #fakeLog { margin-top: 18px; font-family: monospace; color: #7dffb0; font-size: 15px; min-height: 22px; }
+
+  /* PRANK SCREEN */
+  #prank {
+    display: none; position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,.94); justify-content: center; align-items: center; flex-direction: column;
+    padding: 16px; overflow: hidden;
+  }
+  #prank.flash { animation: flash .35s infinite alternate; }
+  #prank.shake { animation: screenShake .12s infinite; }
+  #prankImage {
+    width: 350px; max-width: 80vw; max-height: 40vh; object-fit: contain;
+    border-radius: 15px; margin-bottom: 14px; animation: imagePop .5s ease;
+  }
+  #party { font-size: 70px; animation: pop .5s ease; }
+  #finger { font-size: 110px; animation: wiggle .4s infinite alternate; }
+  #message { font-size: 32px; font-weight: bold; color: #00ff66; margin-top: 14px; padding: 0 20px; }
+  #roast { font-size: 20px; color: #ffd54f; margin-top: 10px; max-width: 520px; min-height: 52px; }
+  #closeIn { font-size: 14px; color: #888; margin-top: 8px; }
+  #closeBtn {
+    margin-top: 10px; padding: 8px 18px; border-radius: 8px; border: 1px solid #555;
+    background: transparent; color: #aaa; cursor: pointer; font-size: 14px;
+  }
+
+  /* RAINING EMOJIS */
+  .drop { position: fixed; top: -60px; font-size: 36px; z-index: 1000; pointer-events: none; animation: fall linear forwards; }
+
+  @keyframes fall { to { transform: translateY(115vh) rotate(540deg); } }
+  @keyframes imagePop { from { transform: scale(0) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes wiggle { from { transform: rotate(-10deg) scale(1); } to { transform: rotate(10deg) scale(1.15); } }
+  @keyframes flash { from { background: rgba(0,0,0,.94); } to { background: rgba(197, 98, 131, 0.94); } }
+  @keyframes screenShake {
+    0% { transform: translate(4px, 3px); } 25% { transform: translate(-4px, -3px); }
+    50% { transform: translate(3px, -4px); } 75% { transform: translate(-3px, 4px); } 100% { transform: translate(0); }
+  }
+
+  @media (max-width: 600px) {
+    #mainBtn { font-size: 18px; padding: 15px 25px; }
+    #prankImage { width: 260px; }
+    #party { font-size: 52px; }
+    #finger { font-size: 84px; }
+    #message { font-size: 24px; }
+    #roast { font-size: 17px; }
+    #fakeTitle { font-size: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #prank.flash, #prank.shake, #finger { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Something special is waiting for you...</h1>
+
+<button id="mainBtn">CLICK ME FOR A SURPRISE!</button>
+<div id="taunt"></div>
+<div id="score"></div>
+
+<!-- FAKE LOADING -->
+<div id="fake">
+  <div id="fakeTitle">Preparing your surprise...</div>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="fakeLog"></div>
+</div>
+
+<!-- PRANK SCREEN -->
+<div id="prank">
+
+  <!-- IMAGE (same as before) -->
+  <img
+    id="birthdayImage"
+    src="https://media.istockphoto.com/id/1151005334/vector/happy-birthday-greeting-card.jpg?s=612x612&w=0&k=20&c=lLctQCiciFGO4sCutpN7Ukw7XtUuZKUKdMYGWqD6qws="
+    alt="birthday Image"
+  >
+
+  <div id="party">🎉🌸👑🎊</div>
+
+  <div id="baloons">🎈</div>
+
+  <div id="message">Happy Birthday! </div>
+
+  <div id="wish"></div>
+  <div id="closeIn"></div>
+  <button id="closeBtn">ok ok, I surrender</button>
+
+  <!-- AUDIO (same as before) -->
+  <audio id="birthdayAudio" src="birthday.mp3" ></audio>
+
+</div>
+
+<script>
+const btn = document.getElementById("mainBtn");
+const taunt = document.getElementById("taunt");
+const fake = document.getElementById("fake");
+const wish = document.getElementById("wish");
+const audio = document.getElementById("birthdayAudio");
+const score = document.getElementById("score");
+
+/* ---------- SETTINGS (edit these!) ---------- */
+const DODGES_NEEDED = 4;       // how many times the button runs away
+const PRANK_SECONDS = 8;       // how long the final screen stays
+const DODGE_LINES = [
+  "Too slow! 🎊", "Nice try! 🏃‍♂️💨", "Bro, you cannot catch a surprise 😂",
+  "Almost! (not really)", "My legs are tired... fine, ONE more ❤️"
+];
+const FAKE_LOGS = [
+  "Wrapping the surprise...", "Checking if you are brave enough 🌸",
+  "Teaching the cat to laugh... 🐱", "Asking your mom for permission...",
+  "Almost done... 99%", "Stuck at 99%... of course 👑"
+];
+const WISHES = [
+  "May your day be filled with joy and laughter!",
+  "Wishing you a birthday full of surprises and happiness!",
+  "Hope your special day is as amazing as you are!",
+  "May all your dreams come true this year!",
+  "Enjoy your birthday and make it a memorable one!"
+];
+const WISH = [
+  "Happy birthday🎉🎂🎊 to the friend who has become family🎉. I am so grateful for your life😁 and for the joy🌸 you bring to everyone around👑 you."
+,"Youre one of the most solid people in my life. Thank you for being constant when everything else isnt. Wishing you a year filled with the same kindness you give to others."
+];
+const RAIN = ["🎉","😍","👑","🎊","🎁","🎊","🎉"];
+
+let dodges = 0, pranked = 0, closeTimer = null, tick = null;
+
+function say(t) { taunt.textContent = t; }
+
+/* ---------- RUNAWAY BUTTON ---------- */
+function runAway() {
+  if (dodges >= DODGES_NEEDED) return;
+  dodges++;
+  btn.style.position = "fixed";
+  const x = Math.random() * (innerWidth - btn.offsetWidth - 20) + 10;
+  const y = Math.random() * (innerHeight - btn.offsetHeight - 20) + 10;
+  btn.style.left = x + "px";
+  btn.style.top = y + "px";
+  say(DODGE_LINES[Math.min(dodges - 1, DODGE_LINES.length - 1)]);
+}
+btn.addEventListener("mouseenter", runAway);
+btn.addEventListener("touchstart", e => {
+  if (dodges < DODGES_NEEDED) { e.preventDefault(); runAway(); }
+}, { passive: false });
+
+btn.addEventListener("click", () => {
+  if (dodges < DODGES_NEEDED) { runAway(); return; }
+  startFake();
+});
+
+/* ---------- FAKE LOADING ---------- */
+function startFake() {
+  fake.style.display = "flex";
+  const fill = document.getElementById("fill");
+  const log = document.getElementById("fakeLog");
+  let step = 0;
+  const marks = [15, 35, 55, 80, 99, 99];
+  const t = setInterval(() => {
+    fill.style.width = marks[step] + "%";
+    log.textContent = FAKE_LOGS[step];
+    step++;
+    if (step >= FAKE_LOGS.length) {
+      clearInterval(t);
+      setTimeout(() => { fake.style.display = "none"; fill.style.width = "0%"; startPrank(); }, 1400);
+    }
+  }, 900);
+}
+
+/* ---------- THE PRANK ---------- */
+function startPrank() {
+  pranked++;
+  prank.style.display = "flex";
+  prank.classList.add("shake", "flash");
+  setTimeout(() => prank.classList.remove("shake"), 700);
+
+  document.getElementById("wish").textContent = WISHES[Math.floor(Math.random() * WISHES.length)];
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+
+  /* PLAY AUDIO */
+  audio.currentTime = 0;
+  audio.play().catch(() => { console.log("Audio could not be played."); });
+
+  const rainTimer = setInterval(makeDrop, 90);
+  let left = PRANK_SECONDS;
+  const closeIn = document.getElementById("closeIn");
+  closeIn.textContent = "Closing in " + left + "s...";
+  tick = setInterval(() => {
+    left--;
+    closeIn.textContent = left > 0 ? "Closing in " + left + "s..." : "";
+  }, 1000);
+
+  const finish = () => {
+    clearInterval(rainTimer); clearInterval(tick); clearTimeout(closeTimer);
+    prank.style.display = "none";
+    prank.classList.remove("flash", "shake");
+    /* STOP AUDIO */
+    audio.pause(); audio.currentTime = 0;
+    document.querySelectorAll(".drop").forEach(d => d.remove());
+    afterPrank();
+  };
+  closeTimer = setTimeout(finish, PRANK_SECONDS * 1000);
+  document.getElementById("closeBtn").onclick = finish;
+}
+
+function makeDrop() {
+  const d = document.createElement("div");
+  d.className = "drop";
+  d.textContent = RAIN[Math.floor(Math.random() * RAIN.length)];
+  d.style.left = Math.random() * 100 + "vw";
+  d.style.animationDuration = (2 + Math.random() * 2.5) + "s";
+  d.style.fontSize = (24 + Math.random() * 36) + "px";
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 5000);
+}
+
+/* ---------- AFTER ---------- */
+function afterPrank() {
+  dodges = 0;
+  btn.style.position = ""; btn.style.left = ""; btn.style.top = "";
+  btn.textContent = "ANOTHER SURPRISE? ";
+  say("You came back?! happy birthday 🎊");
+  score.textContent = "Times TO WISH: " + WISH;
+}
+</script>
+</body>
+</html>
